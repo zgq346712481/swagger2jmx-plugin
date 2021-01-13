@@ -35,8 +35,8 @@ import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -46,21 +46,21 @@ import java.util.*;
 @SuppressWarnings("rawtypes")
 public class MyDefaultGenerator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MyDefaultGenerator.class);
+//    private static final Logger LOGGER = LoggerFactory.getLogger(MyDefaultGenerator.class);
 
     private OpenAPI openAPI;
 
 
     public void generate(String swaggerSourceLocation,String outPutDir) throws Exception {
-
         //step1 :解析swagger内容，生成openApi
         SwaggerParseResult swaggerParseResult = new SwaggerParser().readWithInfo(swaggerSourceLocation, null);
         this.openAPI = swaggerParseResult.getOpenAPI();
-       //step2: 封装模板参数对象
+//        System.out.println("生成openApi"+this.openAPI );
+        //step2: 封装模板参数对象
         TemplateParamVO templateParamVO = prepareTemplateData();
+        System.out.println("templateParamVO----------"+templateParamVO);
         //step3: 填充模板
         paddingTemplate(templateParamVO,outPutDir);
-
 
     }
 
@@ -73,7 +73,7 @@ public class MyDefaultGenerator {
         if(!fileDir.exists()){
             fileDir.mkdir();
         }
-        Writer out = new FileWriter(new File(outPutDir+"/auto_test.jmx"));
+        Writer out = new FileWriter(new File(outPutDir+"/auto_test2.jmx"));
         template.process(templateParamVO, out);
         out.close();
     }
@@ -163,10 +163,10 @@ public class MyDefaultGenerator {
             try {
                 return new URL(url);
             } catch (MalformedURLException var6) {
-                LOGGER.warn("Not valid URL: {}. Default to {}.", server.getUrl(), "http://localhost");
+//                LOGGER.warn("Not valid URL: {}. Default to {}.", server.getUrl(), "http://localhost");
             }
         }
-        LOGGER.warn("Not Server URL: {}. Default to {}.", server.getUrl(), "http://localhost");
+//        LOGGER.warn("Not Server URL: {}. Default to {}.", server.getUrl(), "http://localhost");
         return null;
     }
     private  String sanitizeUrl(String url) {
@@ -227,7 +227,6 @@ public class MyDefaultGenerator {
         boolean requestBodyIsEmpty=true;
 
         if (operation.getRequestBody() != null) {
-
             RequestBody requestBody = path.getPost().getRequestBody();
             requestBody = ModelUtils.getReferencedRequestBody(this.openAPI, requestBody);
             Map<String, Schema> schemas = ModelUtils.getSchemas(this.openAPI);
@@ -236,14 +235,18 @@ public class MyDefaultGenerator {
 
             if(schema.get$ref() !=null){
                 String modelTypeNme= ModelUtils.getSimpleRef(schema.get$ref());
+
                 Set<String> contentTypes= getConsumesInfo(openAPI,operation);
                 List<Map<String, String>> exampleList = new ExampleGenerator(schemas, this.openAPI).generate((Map) null, new ArrayList(contentTypes), modelTypeNme);
+                System.out.println("exampleList--->"+exampleList);
                 if(exampleList.size()>0){
                     Map<String, String> element= exampleList.get(0);
                     String example=element.get("example");
                     requestNode.setRequestBody(example);
                     requestBodyIsEmpty=false;
-                    LOGGER.info("生成的body参数==>{}",example);
+//                    LOGGER.info("生成的body参数==>{}",example);
+                    System.out.println("生成的body参数--->"+example);
+
 
                 }
               }
@@ -255,11 +258,15 @@ public class MyDefaultGenerator {
             List<Parameter> parameterList = operation.getParameters();
             if (parameterList != null && !parameterList.isEmpty()) {
                 for (Parameter param : parameterList) {
+//                    局部变量　${apiname.key}  全局变量 ${key} todo
                     String variableName=operation.getOperationId()+"."+param.getName();
+//                    String variableName=param.getName();
                     ParamNode paramNode = new ParamNode();
                     if ((param instanceof QueryParameter) || "query".equalsIgnoreCase(param.getIn())) {
                         if(requestBodyIsEmpty){
                             paramNode.setParamName(param.getName());
+                            //get请求　参数化引用　 全局变量　${apiname.key}  todo
+                            System.out.println("variableName----------->"+variableName);
                             paramNode.setParamValue("${"+variableName+"}");
                             String defaultValue=param.getSchema().getDefault()==null?null:param.getSchema().getDefault().toString();
                             customVariableList.add(new VariableNode(variableName,defaultValue,param.getDescription()));
@@ -286,7 +293,7 @@ public class MyDefaultGenerator {
                         requestNode.setRequestUrl(requestNode.getRequestUrl().replace(exp,target));
                         customVariableList.add(new VariableNode(variableName,defaultValue,param.getDescription()));
                     } else if ("body".equalsIgnoreCase(param.getIn())) {
-                        LOGGER.info("生成的body参数");
+//                        LOGGER.info("生成的body参数");
                     } else if ((param instanceof HeaderParameter) || "header".equalsIgnoreCase(param.getIn())) {
                         paramNode.setParamName(param.getName());
                         paramNode.setParamValue("${"+variableName+"}");

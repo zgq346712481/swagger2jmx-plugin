@@ -163,7 +163,7 @@
 			    <!--每个接口断言定义开始-->
 				  <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Response状态码断言" enabled="true">
                      <stringProp name="JSON_PATH">$.statusCode</stringProp>
-                     <stringProp name="EXPECTED_VALUE">0</stringProp>
+                     <stringProp name="EXPECTED_VALUE">000000</stringProp>
                      <boolProp name="JSONVALIDATION">true</boolProp>
                      <boolProp name="EXPECT_NULL">false</boolProp>
                      <boolProp name="INVERT">false</boolProp>

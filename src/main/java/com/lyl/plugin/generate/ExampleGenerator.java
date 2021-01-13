@@ -37,7 +37,7 @@ public class ExampleGenerator {
     public ExampleGenerator(Map<String, Schema> examples, OpenAPI openAPI) {
         this.examples = examples;
         this.openAPI = openAPI;
-        this.random = new Random((long)"ExampleGenerator".hashCode());
+        this.random = new Random((long)"ExampleGenerator".hashCode());//随机数生成
     }
 
     public List<Map<String, String>> generateFromResponseSchema(String statusCode, Schema responseSchema, Set<String> producesInfo) {
@@ -49,7 +49,7 @@ public class ExampleGenerator {
 
             while(var5.hasNext()) {
                 Map<String, String> example = (Map)var5.next();
-                example.put("statusCode", statusCode);
+                example.put("statusCode", statusCode);//响应code断言
             }
 
             return examples;
@@ -239,8 +239,10 @@ public class ExampleGenerator {
 
     private Object resolvePropertyToExample(String propertyName, String mediaType, Schema property, Set<String> processedModels) {
         LOGGER.debug("Resolving example for property {}...", property);
+        System.out.println("property------------>"+property);
         if (property.getExample() != null) {
             LOGGER.debug("Example set in openapi spec, returning example: '{}'", property.getExample().toString());
+            System.out.println("Example set in openapi spec, returning example: '{}"+ property.getExample().toString());
             return property.getExample();
         } else if (ModelUtils.isBooleanSchema(property)) {
             Object defaultValue = property.getDefault();
@@ -286,7 +288,7 @@ public class ExampleGenerator {
                 }
 
                 if (ModelUtils.isFileSchema(property)) {
-                    return "";
+                    return "";//定义上传文件的路径　bin二进制 jmx-upload
                 }
 
                 if (ModelUtils.isIntegerSchema(property)) {
@@ -304,7 +306,8 @@ public class ExampleGenerator {
                     if (property.getName() != null) {
                         mp.put(property.getName(), this.resolvePropertyToExample(propertyName, mediaType, ModelUtils.getAdditionalProperties(property), processedModels));
                     } else {
-                        mp.put("key", this.resolvePropertyToExample(propertyName, mediaType, ModelUtils.getAdditionalProperties(property), processedModels));
+                        mp.put("key", this.resolvePropertyToExample(propertyName, mediaType, ModelUtils.getAdditionalProperties(property), processedModels)+"}");
+                        System.out.println("mp88888888888-------------"+mp);
                     }
 
                     return mp;
@@ -353,6 +356,7 @@ public class ExampleGenerator {
                     return this.resolveModelToExample(simpleName, mediaType, schema, processedModels);
                 }
 
+                //判断参数类型，如果没有任何约束，输出key   ${key}  todo
                 if (ModelUtils.isObjectSchema(property)) {
                     return "{}";
                 }
@@ -396,7 +400,9 @@ public class ExampleGenerator {
                 while(var6.hasNext()) {
                     Object propertyName = var6.next();
                     Schema property = (Schema)schema.getProperties().get(propertyName.toString());
+                    //key-value　 只要需要参数化的value添加参数化引用大括号 　　全局变量：${key} todo
                     values.put(propertyName.toString(), this.resolvePropertyToExample(propertyName.toString(), mediaType, property, processedModels));
+//                    values.put(propertyName.toString(), "${"+this.resolvePropertyToExample(propertyName.toString(), mediaType, property, processedModels)+"}");
                 }
 
                 schema.setExample(values);
